@@ -2,3 +2,4 @@
 /uploadsar/*
 !/uploadsar/.gitkeep
 .env
+/.claude/
