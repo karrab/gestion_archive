@@ -16,6 +16,15 @@ $tables = [
     'service' => ['sql' => 'SELECT id, nom, notes FROM service ORDER BY nom', 'titre' => 'قائمة الخدمات', 'cols' => ['#', 'الاسم', 'ملاحظات']],
     'depot' => ['sql' => 'SELECT id_dept, numero, description, notes FROM depot ORDER BY numero', 'titre' => 'قائمة المستودعات', 'cols' => ['#', 'الرقم', 'الوصف', 'ملاحظات']],
     'historique' => ['sql' => "SELECT h.id, u.login, h.action, h.module, h.description, h.created_at FROM historique h LEFT JOIN user u ON u.id = h.user_id ORDER BY h.created_at DESC LIMIT 1000", 'titre' => 'سجل العمليات', 'cols' => ['#', 'المستخدم', 'العملية', 'الوحدة', 'الوصف', 'التاريخ']],
+    'annee' => ['sql' => 'SELECT id_annee, annee FROM annee ORDER BY annee', 'titre' => 'قائمة السنوات', 'cols' => ['#', 'السنة']],
+    'classification' => ['sql' => 'SELECT id_cls, ref_classification, titre_classfication, notes FROM classification ORDER BY ref_classification', 'titre' => 'قائمة التصنيف', 'cols' => ['#', 'المرجع', 'العنوان', 'ملاحظات']],
+    'carac_ideologique' => ['sql' => 'SELECT id_ideo, description, notes FROM carac_ideologique ORDER BY description', 'titre' => 'الخاصية الإيديولوجية', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'carac_temporelle' => ['sql' => 'SELECT id_tmp, description, notes FROM carac_temporelle ORDER BY description', 'titre' => 'الخاصية الزمنية', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'carac_geographique' => ['sql' => 'SELECT id_geo, description, notes FROM carac_geographique ORDER BY description', 'titre' => 'الخاصية الجغرافية', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'type_doc' => ['sql' => 'SELECT id_typ, description, notes FROM type_doc ORDER BY description', 'titre' => 'أنواع الوثائق', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'sort_fin_doc' => ['sql' => 'SELECT id_sort, description, notes FROM sort_fin_doc ORDER BY description', 'titre' => 'مصير الوثيقة', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'etat_archive' => ['sql' => 'SELECT id_etat, etat, notes FROM etat_archive ORDER BY etat', 'titre' => 'حالات الأرشيف', 'cols' => ['#', 'الحالة', 'ملاحظات']],
+    'institution' => ['sql' => 'SELECT id_ins, description, notes FROM institution ORDER BY description', 'titre' => 'المؤسسات', 'cols' => ['#', 'الوصف', 'ملاحظات']],
 ];
 
 if (!isset($tables[$type])) {
