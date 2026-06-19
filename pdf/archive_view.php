@@ -1,12 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../config/config.php';
-require __DIR__ . '/header_template.php';
-auth_check();
-require __DIR__ . '/../vendor/autoload.php';
-
-use Dompdf\Dompdf;
-use Dompdf\Options;
+require_permission('archive.print');
+require __DIR__ . '/TcpdfBase.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = db()->prepare(
@@ -25,7 +21,6 @@ if (!$item) {
 }
 
 $parametres = get_parametres();
-$html = pdf_header_html($parametres, 'بطاقة الأرشيف رقم ' . $item['id']);
 
 $rows = [
     'التاريخ' => $item['date_archive'],
@@ -44,20 +39,16 @@ $rows = [
     'ملاحظات' => $item['notes'],
 ];
 
-$html .= '<table style="width:100%; border-collapse:collapse; font-family: DejaVu Sans, sans-serif; direction:rtl;" border="1" cellpadding="6">';
+$pdf = new TcpdfBase($parametres, 'بطاقة الأرشيف رقم ' . $item['id'], 'P');
+$pdf->AddPage();
+
+$html = '<table border="1" cellpadding="6" style="font-size:10pt;">';
 foreach ($rows as $label => $value) {
-    $html .= '<tr><th style="width:30%; background:#f0f0f0; text-align:right;">' . htmlspecialchars($label) . '</th><td>' . htmlspecialchars((string) $value) . '</td></tr>';
+    $html .= '<tr><th style="width:30%; background-color:#f0f0f0;">' . htmlspecialchars($label) . '</th><td>' . htmlspecialchars((string) $value) . '</td></tr>';
 }
 $html .= '</table>';
 
-$options = new Options();
-$options->set('isRemoteEnabled', true);
-$options->set('defaultFont', 'DejaVu Sans');
-
-$dompdf = new Dompdf($options);
-$dompdf->loadHtml($html, 'UTF-8');
-$dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
+$pdf->writeHTML($html, true, false, true, false, '');
 
 log_historique('export_pdf', 'archive', "Export PDF de l'archive #{$id}");
-$dompdf->stream('archive_' . $id . '.pdf', ['Attachment' => false]);
+$pdf->Output('archive_' . $id . '.pdf', 'I');

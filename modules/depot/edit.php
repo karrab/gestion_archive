@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../config/config.php';
-require_permission('reference.manage');
+require_permission('reference.edit');
 
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $stmt = db()->prepare('SELECT * FROM depot WHERE id_dept = ?');

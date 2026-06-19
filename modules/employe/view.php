@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../config/config.php';
-require_permission('reference.manage');
+require_permission('reference.view');
 
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = db()->prepare('SELECT e.*, s.nom AS service_nom FROM employe e INNER JOIN service s ON s.id = e.service_id WHERE e.id = ?');

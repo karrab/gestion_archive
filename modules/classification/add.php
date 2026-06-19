@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../config/config.php';
-require_permission('reference.manage');
+require_permission('reference.add');
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

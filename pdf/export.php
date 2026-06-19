@@ -1,12 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../config/config.php';
-require __DIR__ . '/header_template.php';
 auth_check();
-require __DIR__ . '/../vendor/autoload.php';
-
-use Dompdf\Dompdf;
-use Dompdf\Options;
+require __DIR__ . '/TcpdfBase.php';
 
 $type = $_GET['type'] ?? '';
 $pdo = db();
@@ -29,6 +25,22 @@ $tables = [
     'archive' => ['sql' => "SELECT a.id, a.date_archive, a.titre_dossier, a.num_boite, d.numero AS depot, a.ref_classification, a.etat_archive
                              FROM archive a INNER JOIN depot d ON d.id_dept = a.num_depot ORDER BY a.date_archive, a.id",
                   'titre' => 'قائمة الأرشيف', 'cols' => ['#', 'التاريخ', 'عنوان الملف', 'رقم الصندوق', 'المستودع', 'مرجع التصنيف', 'الحالة']],
+    'transfert' => ['sql' => "SELECT t.id_trans, t.date_trans, t.ref_trans, t.num_bordereau, t.nb_doc, t.nb_boite, sd.nom AS service_dest, so.nom AS service_origin
+                               FROM transfert t INNER JOIN service sd ON sd.id = t.service_dest INNER JOIN service so ON so.id = t.service_origin
+                               ORDER BY t.date_trans, t.id_trans",
+                    'titre' => 'قائمة عمليات النقل', 'cols' => ['#', 'التاريخ', 'المرجع', 'رقم المذكرة', 'عدد الوثائق', 'عدد الصناديق', 'الخدمة المستقبلة', 'الخدمة المصدر']],
+    'versement' => ['sql' => "SELECT v.id_vers, v.date_vers, v.ref_vers, v.num_bordereau, v.nb_doc, v.nb_boite, s.nom AS service, e.nom AS employe
+                               FROM versement v INNER JOIN service s ON s.id = v.service INNER JOIN employe e ON e.id = v.employe
+                               ORDER BY v.date_vers, v.id_vers",
+                    'titre' => 'قائمة عمليات الإيداع', 'cols' => ['#', 'التاريخ', 'المرجع', 'رقم المذكرة', 'عدد الوثائق', 'عدد الصناديق', 'الخدمة', 'الموظف']],
+    'elimination' => ['sql' => "SELECT el.id_elm, el.date_elm, el.ref_elm, el.numero_pv, el.num_bordereau, el.nb_doc, el.nb_boite, s.nom AS service
+                                 FROM elimination el INNER JOIN service s ON s.id = el.service
+                                 ORDER BY el.date_elm, el.id_elm",
+                       'titre' => 'قائمة عمليات الإتلاف', 'cols' => ['#', 'التاريخ', 'المرجع', 'رقم المحضر', 'رقم المذكرة', 'عدد الوثائق', 'عدد الصناديق', 'الخدمة']],
+    'user' => ['sql' => "SELECT u.id, u.login, u.nom, u.prenom, u.mail, r.nom AS role FROM user u INNER JOIN role r ON r.id = u.role_id ORDER BY u.nom",
+               'titre' => 'قائمة المستخدمين', 'cols' => ['#', 'المستخدم', 'الاسم', 'اللقب', 'البريد الإلكتروني', 'الدور']],
+    'version' => ['sql' => "SELECT id_ver, num_ver, developper_par, direction, nouveaute FROM version_app ORDER BY id_ver DESC",
+                  'titre' => 'قائمة الإصدارات', 'cols' => ['#', 'الإصدار', 'تطوير', 'الإدارة', 'الجديد']],
 ];
 
 if (!isset($tables[$type])) {
@@ -36,11 +48,23 @@ if (!isset($tables[$type])) {
     die('Export non disponible.');
 }
 
+$permissionMap = [
+    'service' => 'reference.print', 'depot' => 'reference.print', 'annee' => 'reference.print',
+    'classification' => 'reference.print', 'carac_ideologique' => 'reference.print', 'carac_temporelle' => 'reference.print',
+    'carac_geographique' => 'reference.print', 'type_doc' => 'reference.print', 'sort_fin_doc' => 'reference.print',
+    'etat_archive' => 'reference.print', 'institution' => 'reference.print', 'employe' => 'reference.print',
+    'archive' => 'archive.print', 'transfert' => 'transfert.print', 'versement' => 'versement.print',
+    'elimination' => 'elimination.print', 'user' => 'user.print', 'version' => 'version.print',
+    'historique' => 'historique.print',
+];
+require_permission($permissionMap[$type]);
+
 $rows = $pdo->query($tables[$type]['sql'])->fetchAll();
 
-$html = pdf_header_html($parametres, $tables[$type]['titre']);
-$html .= '<table style="width:100%; border-collapse:collapse; font-family: DejaVu Sans, sans-serif; direction:rtl;" border="1" cellpadding="4">';
-$html .= '<thead><tr style="background:#0d3b66; color:#fff;">';
+$pdf = new TcpdfBase($parametres, $tables[$type]['titre'], 'L');
+$pdf->AddPage();
+
+$html = '<table border="1" cellpadding="4" style="font-size:9pt;"><thead><tr style="background-color:#0d3b66; color:#ffffff;">';
 foreach ($tables[$type]['cols'] as $col) {
     $html .= '<th>' . htmlspecialchars($col) . '</th>';
 }
@@ -54,14 +78,7 @@ foreach ($rows as $row) {
 }
 $html .= '</tbody></table>';
 
-$options = new Options();
-$options->set('isRemoteEnabled', true);
-$options->set('defaultFont', 'DejaVu Sans');
-
-$dompdf = new Dompdf($options);
-$dompdf->loadHtml($html, 'UTF-8');
-$dompdf->setPaper('A4', 'landscape');
-$dompdf->render();
+$pdf->writeHTML($html, true, false, true, false, '');
 
 log_historique('export_pdf', $type, "Export PDF: {$type}");
-$dompdf->stream($type . '_' . date('Ymd_His') . '.pdf', ['Attachment' => false]);
+$pdf->Output($type . '_' . date('Ymd_His') . '.pdf', 'I');

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../config/config.php';
-require_permission('reference.manage');
+require_permission('reference.view');
 
 $pdo = db();
 $sort = in_array($_GET['sort'] ?? '', ['id_annee', 'annee']) ? $_GET['sort'] : 'annee';
@@ -31,8 +31,12 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4><i class="bi bi-calendar3"></i> السنوات</h4>
   <div>
+    <?php if (has_permission('reference.print')): ?>
     <a href="<?= BASE_URL ?>/pdf/export.php?type=annee" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php endif; ?>
+    <?php if (has_permission('reference.add')): ?>
     <a href="add.php" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</a>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -68,12 +72,12 @@ require __DIR__ . '/../../includes/layout_header.php';
           <td><?= (int) $it['annee'] ?></td>
           <td>
             <a href="view.php?id=<?= $it['id_annee'] ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
-            <a href="edit.php?id=<?= $it['id_annee'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-            <form method="post" action="delete.php" class="d-inline">
+            <?php if (has_permission('reference.edit')): ?><a href="edit.php?id=<?= $it['id_annee'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a><?php endif; ?>
+            <?php if (has_permission('reference.delete')): ?><form method="post" action="delete.php" class="d-inline">
               <?= csrf_field() ?>
               <input type="hidden" name="id" value="<?= $it['id_annee'] ?>">
               <button type="button" class="btn btn-sm btn-outline-danger btn-delete-confirm"><i class="bi bi-trash"></i></button>
-            </form>
+            </form><?php endif; ?>
           </td>
         </tr>
       <?php endforeach; ?>

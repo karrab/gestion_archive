@@ -62,7 +62,9 @@ require __DIR__ . '/../../includes/layout_header.php';
       </dd>
       <dt class="col-sm-3">ملاحظات</dt><dd class="col-sm-9"><?= nl2br(e($item['notes'])) ?></dd>
     </dl>
-    <a href="<?= BASE_URL ?>/pdf/archive_view.php?id=<?= $item['id'] ?>" class="btn btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php if (has_permission('archive.print')): ?>
+      <a href="<?= BASE_URL ?>/pdf/archive_view.php?id=<?= $item['id'] ?>" class="btn btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php endif; ?>
     <a href="list.php" class="btn btn-secondary">رجوع</a>
   </div>
 </div>

@@ -60,15 +60,15 @@ $pageTitle = $pageTitle ?? 'Gestion Archive';
             <li><a class="dropdown-item" href="<?= BASE_URL ?>/pdf/export.php?type=historique">سجل العمليات</a></li>
           </ul>
         </li>
-        <?php if (has_permission('user.manage')): ?>
+        <?php if (has_permission('user.view') || has_permission('role.manage') || has_permission('parametres.manage') || has_permission('version.view') || has_permission('historique.view')): ?>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-gear"></i> الإدارة</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/user/list.php">المستخدمون</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/role/list.php">الأدوار والصلاحيات</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/parametres/edit.php">المعلمات</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/version/list.php">الإصدارات</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/historique/list.php">سجل العمليات</a></li>
+            <?php if (has_permission('user.view')): ?><li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/user/list.php">المستخدمون</a></li><?php endif; ?>
+            <?php if (has_permission('role.manage')): ?><li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/role/list.php">الأدوار والصلاحيات</a></li><?php endif; ?>
+            <?php if (has_permission('parametres.manage')): ?><li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/parametres/edit.php">المعلمات</a></li><?php endif; ?>
+            <?php if (has_permission('version.view')): ?><li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/version/list.php">الإصدارات</a></li><?php endif; ?>
+            <?php if (has_permission('historique.view')): ?><li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/historique/list.php">سجل العمليات</a></li><?php endif; ?>
           </ul>
         </li>
         <?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../config/config.php';
-require_permission('reference.manage');
+require_permission('reference.view');
 
 $pdo = db();
 
@@ -32,8 +32,12 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4><i class="bi bi-diagram-3"></i> الخدمات</h4>
   <div>
+    <?php if (has_permission('reference.print')): ?>
     <a href="<?= BASE_URL ?>/pdf/export.php?type=service" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php endif; ?>
+    <?php if (has_permission('reference.add')): ?>
     <a href="add.php" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</a>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -73,11 +77,11 @@ require __DIR__ . '/../../includes/layout_header.php';
           <td>
             <a href="view.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
             <a href="edit.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-            <form method="post" action="delete.php" class="d-inline">
+            <?php if (has_permission('reference.delete')): ?><form method="post" action="delete.php" class="d-inline">
               <?= csrf_field() ?>
               <input type="hidden" name="id" value="<?= $s['id'] ?>">
               <button type="button" class="btn btn-sm btn-outline-danger btn-delete-confirm"><i class="bi bi-trash"></i></button>
-            </form>
+            </form><?php endif; ?>
           </td>
         </tr>
       <?php endforeach; ?>

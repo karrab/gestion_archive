@@ -66,7 +66,9 @@ require __DIR__ . '/../../includes/layout_header.php';
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4><i class="bi bi-archive"></i> الأرشيف</h4>
   <div>
-    <a href="<?= BASE_URL ?>/pdf/export.php?type=archive" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php if (has_permission('archive.print')): ?>
+      <a href="<?= BASE_URL ?>/pdf/export.php?type=archive" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <?php endif; ?>
     <?php if (has_permission('archive.add')): ?>
       <a href="add.php" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</a>
     <?php endif; ?>
@@ -197,7 +199,9 @@ require __DIR__ . '/../../includes/layout_header.php';
             <?php if (has_permission('archive.edit')): ?>
               <a href="edit.php?id=<?= $it['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
             <?php endif; ?>
-            <a href="<?= BASE_URL ?>/pdf/archive_view.php?id=<?= $it['id'] ?>" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>
+            <?php if (has_permission('archive.print')): ?>
+              <a href="<?= BASE_URL ?>/pdf/archive_view.php?id=<?= $it['id'] ?>" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>
+            <?php endif; ?>
             <?php if (has_permission('archive.delete')): ?>
               <form method="post" action="delete.php" class="d-inline">
                 <?= csrf_field() ?>
