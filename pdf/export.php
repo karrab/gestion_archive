@@ -25,6 +25,7 @@ $tables = [
     'sort_fin_doc' => ['sql' => 'SELECT id_sort, description, notes FROM sort_fin_doc ORDER BY description', 'titre' => 'مصير الوثيقة', 'cols' => ['#', 'الوصف', 'ملاحظات']],
     'etat_archive' => ['sql' => 'SELECT id_etat, etat, notes FROM etat_archive ORDER BY etat', 'titre' => 'حالات الأرشيف', 'cols' => ['#', 'الحالة', 'ملاحظات']],
     'institution' => ['sql' => 'SELECT id_ins, description, notes FROM institution ORDER BY description', 'titre' => 'المؤسسات', 'cols' => ['#', 'الوصف', 'ملاحظات']],
+    'employe' => ['sql' => "SELECT e.id, e.matricule, e.nom, e.renom, s.nom AS service, e.mail, e.tel1 FROM employe e INNER JOIN service s ON s.id = e.service_id ORDER BY e.nom", 'titre' => 'قائمة الموظفين', 'cols' => ['#', 'الرقم الوظيفي', 'الاسم', 'اللقب', 'الخدمة', 'البريد الإلكتروني', 'الهاتف']],
 ];
 
 if (!isset($tables[$type])) {
