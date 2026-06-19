@@ -1,35 +1,90 @@
 :root {
   --brand-color: #0d3b66;
+  --brand-color-light: #1d5b8f;
+  --radius-base: 0.85rem;
 }
 
 body {
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background-color: #f4f6f9;
+  background-color: #f1f4f9;
 }
 
 #main-navbar {
-  background-color: var(--brand-color) !important;
+  background: linear-gradient(135deg, var(--brand-color), var(--brand-color-light)) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+#main-navbar .nav-link {
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+#main-navbar .nav-link:hover,
+#main-navbar .nav-link:focus {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .navbar-brand img {
-  border-radius: 4px;
+  border-radius: 6px;
   background: #fff;
+  padding: 2px;
+}
+
+.card {
+  border: none;
+  border-radius: var(--radius-base);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
 }
 
 .card-stat {
   border: none;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-base);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
 }
 
 .card-stat .display-6 {
   font-weight: 700;
 }
 
+.btn {
+  border-radius: 0.6rem;
+}
+
+.btn-primary {
+  background-color: var(--brand-color);
+  border-color: var(--brand-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-color-light);
+  border-color: var(--brand-color-light);
+}
+
+.form-control,
+.form-select {
+  border-radius: 0.6rem;
+}
+
+.table {
+  border-radius: var(--radius-base);
+  overflow: hidden;
+}
+
 .table thead th {
   background-color: var(--brand-color);
   color: #fff;
   white-space: nowrap;
+  border-color: var(--brand-color);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 59, 102, 0.05);
 }
 
 .table-col-search input {

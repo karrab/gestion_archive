@@ -11,6 +11,7 @@ $pageTitle = $pageTitle ?? 'Gestion Archive';
 <title><?= e($pageTitle) ?> - <?= e($parametres['nom_etablissement'] ?? 'Gestion Archive') ?></title>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/bootstrap.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/select2.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/app.css">
 </head>
 <body>
