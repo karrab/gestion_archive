@@ -1,0 +1,73 @@
+:root {
+  --brand-color: #0d3b66;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background-color: #f4f6f9;
+}
+
+#main-navbar {
+  background-color: var(--brand-color) !important;
+}
+
+.navbar-brand img {
+  border-radius: 4px;
+  background: #fff;
+}
+
+.card-stat {
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-stat .display-6 {
+  font-weight: 700;
+}
+
+.table thead th {
+  background-color: var(--brand-color);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.table-col-search input {
+  font-size: 0.85rem;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable i {
+  opacity: 0.6;
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d3b66, #1d5b8f);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 1rem;
+}
+
+#global-search-results {
+  position: absolute;
+  z-index: 1050;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  width: 92%;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 60vh;
+  overflow-y: auto;
+}
