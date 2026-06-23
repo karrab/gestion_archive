@@ -20,23 +20,29 @@ if ($dateDebut !== '') { $where[] = 't.date_trans >= :date_debut'; $params['date
 if ($dateFin !== '') { $where[] = 't.date_trans <= :date_fin'; $params['date_fin'] = $dateFin; }
 if ($filtreRef !== '') { $where[] = 't.ref_trans LIKE :ref_trans'; $params['ref_trans'] = '%' . $filtreRef . '%'; }
 if ($filtreBordereau !== '') { $where[] = 't.num_bordereau LIKE :num_bordereau'; $params['num_bordereau'] = '%' . $filtreBordereau . '%'; }
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$cursorVal = $_GET['cursor_val'] ?? null;
+$cursorId = isset($_GET['cursor_id']) && $_GET['cursor_id'] !== '' ? (int) $_GET['cursor_id'] : null;
 
-$sql = "SELECT t.id_trans, t.date_trans, t.ref_trans, t.num_bordereau, t.nb_doc, t.nb_boite, t.metrage_lin,
+$selectFromSql = "SELECT t.id_trans, t.date_trans, t.ref_trans, t.num_bordereau, t.nb_doc, t.nb_boite, t.metrage_lin,
                sd.nom AS service_dest_nom, ed.nom AS employe_dest_nom, ed.renom AS employe_dest_renom,
                so.nom AS service_origin_nom, eo.nom AS employe_origin_nom, eo.renom AS employe_origin_renom
         FROM transfert t
         INNER JOIN service sd ON sd.id = t.service_dest
         INNER JOIN employe ed ON ed.id = t.employe_dest
         INNER JOIN service so ON so.id = t.service_origin
-        INNER JOIN employe eo ON eo.id = t.employe_origin
-        {$whereSql} ORDER BY t.{$sort} {$dir}, t.id_trans {$dir}";
-if ($perPage !== 'all') {
-    $sql .= ' LIMIT ' . (int) $perPage;
+        INNER JOIN employe eo ON eo.id = t.employe_origin";
+
+if ($perPage === 'all') {
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $stmt = $pdo->prepare("{$selectFromSql} {$whereSql} ORDER BY t.{$sort} {$dir}, t.id_trans {$dir}");
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+    $hasMore = false;
+} else {
+    $result = keyset_paginate($pdo, $selectFromSql, $where, $params, "t.{$sort}", $dir, 't.id_trans', $cursorVal, $cursorId, (int) $perPage);
+    $items = $result['items'];
+    $hasMore = $result['has_more'];
 }
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$items = $stmt->fetchAll();
 
 $pageTitle = 'النقل';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -143,4 +149,19 @@ require __DIR__ . '/../../includes/layout_header.php';
     </table>
   </div>
 </div>
+<?php if ($perPage !== 'all'): ?>
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <div>
+    <?php if ($cursorVal !== null): ?>
+      <a href="<?= e(pagination_url(['cursor_val' => null, 'cursor_id' => null])) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-skip-start"></i> الصفحة الأولى</a>
+    <?php endif; ?>
+  </div>
+  <div>
+    <?php if ($hasMore && $items): ?>
+      <?php $last = end($items); ?>
+      <a href="<?= e(pagination_url(['cursor_val' => $last[$sort], 'cursor_id' => $last['id_trans']])) ?>" class="btn btn-sm btn-outline-primary">الصفحة التالية <i class="bi bi-chevron-left"></i></a>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

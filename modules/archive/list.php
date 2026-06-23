@@ -37,23 +37,28 @@ foreach (['f_titre_dossier' => 'a.titre_dossier', 'f_num_boite' => 'a.num_boite'
     }
 }
 
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$cursorVal = $_GET['cursor_val'] ?? null;
+$cursorId = isset($_GET['cursor_id']) && $_GET['cursor_id'] !== '' ? (int) $_GET['cursor_id'] : null;
 
-$sql = "SELECT a.id, a.date_archive, a.titre_dossier, a.num_boite, a.num_etagere, a.num_plaque, a.emplacement,
+$selectFromSql = "SELECT a.id, a.date_archive, a.titre_dossier, a.num_boite, a.num_etagere, a.num_plaque, a.emplacement,
                a.annee_min, a.annee_max, a.ref_classification, a.titre_classfication, a.etat_archive, a.fichier,
                s.nom AS service_nom, e.nom AS employe_nom, e.renom AS employe_renom, d.numero AS depot_numero
         FROM archive a
         INNER JOIN service s ON s.id = a.service_id
         INNER JOIN employe e ON e.id = a.employe_id
-        INNER JOIN depot d ON d.id_dept = a.num_depot
-        {$whereSql}
-        ORDER BY a.{$sort} {$dir}, a.id {$dir}";
-if ($perPage !== 'all') {
-    $sql .= ' LIMIT ' . (int) $perPage;
+        INNER JOIN depot d ON d.id_dept = a.num_depot";
+
+if ($perPage === 'all') {
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $stmt = $pdo->prepare("{$selectFromSql} {$whereSql} ORDER BY a.{$sort} {$dir}, a.id {$dir}");
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+    $hasMore = false;
+} else {
+    $result = keyset_paginate($pdo, $selectFromSql, $where, $params, "a.{$sort}", $dir, 'a.id', $cursorVal, $cursorId, (int) $perPage);
+    $items = $result['items'];
+    $hasMore = $result['has_more'];
 }
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$items = $stmt->fetchAll();
 
 $etats = $pdo->query('SELECT etat FROM etat_archive ORDER BY etat')->fetchAll(PDO::FETCH_COLUMN);
 $ideologiques = $pdo->query('SELECT id_ideo, description FROM carac_ideologique ORDER BY description')->fetchAll();
@@ -219,4 +224,19 @@ require __DIR__ . '/../../includes/layout_header.php';
     </table>
   </div>
 </div>
+<?php if ($perPage !== 'all'): ?>
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <div>
+    <?php if ($cursorVal !== null): ?>
+      <a href="<?= e(pagination_url(['cursor_val' => null, 'cursor_id' => null])) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-skip-start"></i> الصفحة الأولى</a>
+    <?php endif; ?>
+  </div>
+  <div>
+    <?php if ($hasMore && $items): ?>
+      <?php $last = end($items); ?>
+      <a href="<?= e(pagination_url(['cursor_val' => $last[$sort], 'cursor_id' => $last['id']])) ?>" class="btn btn-sm btn-outline-primary">الصفحة التالية <i class="bi bi-chevron-left"></i></a>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

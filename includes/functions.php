@@ -100,22 +100,49 @@ function get_parametres(): array
 }
 
 /**
- * Pagination Keyset (sans OFFSET) : on pagine sur (date_col, id) pour rester
- * performant même avec de gros volumes, conformément à l'index composite.
+ * Pagination Keyset (sans OFFSET) : on pagine sur (sortCol, idCol) pour rester
+ * performant même avec de gros volumes, conformément aux index composites.
+ * $where est un tableau de conditions SQL (sans le mot-clé WHERE) déjà liées à $params.
+ * Retourne ['items' => [...], 'has_more' => bool].
  */
-function keyset_paginate(string $baseSql, array $params, string $dateCol, string $idCol, ?string $cursorDate, ?int $cursorId, int $limit): array
+function keyset_paginate(PDO $pdo, string $selectFromSql, array $where, array $params, string $sortCol, string $dir, string $idCol, ?string $cursorVal, ?int $cursorId, int $limit): array
 {
-    $sql = $baseSql;
-    if ($cursorDate !== null && $cursorId !== null) {
-        $sql .= " AND ({$dateCol} > :cursor_date OR ({$dateCol} = :cursor_date AND {$idCol} > :cursor_id))";
-        $params['cursor_date'] = $cursorDate;
+    $dir = strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC';
+    $op = $dir === 'DESC' ? '<' : '>';
+
+    if ($cursorVal !== null && $cursorId !== null) {
+        $where[] = "({$sortCol} {$op} :cursor_val OR ({$sortCol} = :cursor_val AND {$idCol} {$op} :cursor_id))";
+        $params['cursor_val'] = $cursorVal;
         $params['cursor_id'] = $cursorId;
     }
-    $sql .= " ORDER BY {$dateCol} ASC, {$idCol} ASC LIMIT " . (int) $limit;
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $sql = "{$selectFromSql} {$whereSql} ORDER BY {$sortCol} {$dir}, {$idCol} {$dir} LIMIT " . ((int) $limit + 1);
 
-    $stmt = db()->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    return $stmt->fetchAll();
+    $rows = $stmt->fetchAll();
+
+    $hasMore = count($rows) > $limit;
+    if ($hasMore) {
+        array_pop($rows);
+    }
+
+    return ['items' => $rows, 'has_more' => $hasMore];
+}
+
+/**
+ * Construit une querystring en fusionnant $_GET avec les overrides fournis
+ * (une valeur null supprime la clé), utile pour les liens "page suivante".
+ */
+function pagination_url(array $overrides): string
+{
+    $params = array_merge($_GET, $overrides);
+    foreach ($params as $k => $v) {
+        if ($v === null) {
+            unset($params[$k]);
+        }
+    }
+    return '?' . http_build_query($params);
 }
 
 function upload_fichier(array $file, string $subDir = ''): ?string

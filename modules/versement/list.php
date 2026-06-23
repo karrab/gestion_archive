@@ -20,21 +20,27 @@ if ($dateDebut !== '') { $where[] = 'v.date_vers >= :date_debut'; $params['date_
 if ($dateFin !== '') { $where[] = 'v.date_vers <= :date_fin'; $params['date_fin'] = $dateFin; }
 if ($filtreRef !== '') { $where[] = 'v.ref_vers LIKE :ref_vers'; $params['ref_vers'] = '%' . $filtreRef . '%'; }
 if ($filtreBordereau !== '') { $where[] = 'v.num_bordereau LIKE :num_bordereau'; $params['num_bordereau'] = '%' . $filtreBordereau . '%'; }
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$cursorVal = $_GET['cursor_val'] ?? null;
+$cursorId = isset($_GET['cursor_id']) && $_GET['cursor_id'] !== '' ? (int) $_GET['cursor_id'] : null;
 
-$sql = "SELECT v.id_vers, v.date_vers, v.ref_vers, v.num_bordereau, v.nb_doc, v.nb_boite, v.metrage_lin,
+$selectFromSql = "SELECT v.id_vers, v.date_vers, v.ref_vers, v.num_bordereau, v.nb_doc, v.nb_boite, v.metrage_lin,
                s.nom AS service_nom, e.nom AS employe_nom, e.renom AS employe_renom, i.description AS institution_nom
         FROM versement v
         INNER JOIN service s ON s.id = v.service
         INNER JOIN employe e ON e.id = v.employe
-        LEFT JOIN institution i ON i.id_ins = v.institution
-        {$whereSql} ORDER BY v.{$sort} {$dir}, v.id_vers {$dir}";
-if ($perPage !== 'all') {
-    $sql .= ' LIMIT ' . (int) $perPage;
+        LEFT JOIN institution i ON i.id_ins = v.institution";
+
+if ($perPage === 'all') {
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $stmt = $pdo->prepare("{$selectFromSql} {$whereSql} ORDER BY v.{$sort} {$dir}, v.id_vers {$dir}");
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+    $hasMore = false;
+} else {
+    $result = keyset_paginate($pdo, $selectFromSql, $where, $params, "v.{$sort}", $dir, 'v.id_vers', $cursorVal, $cursorId, (int) $perPage);
+    $items = $result['items'];
+    $hasMore = $result['has_more'];
 }
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$items = $stmt->fetchAll();
 
 $pageTitle = 'الإيداع';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -139,4 +145,19 @@ require __DIR__ . '/../../includes/layout_header.php';
     </table>
   </div>
 </div>
+<?php if ($perPage !== 'all'): ?>
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <div>
+    <?php if ($cursorVal !== null): ?>
+      <a href="<?= e(pagination_url(['cursor_val' => null, 'cursor_id' => null])) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-skip-start"></i> الصفحة الأولى</a>
+    <?php endif; ?>
+  </div>
+  <div>
+    <?php if ($hasMore && $items): ?>
+      <?php $last = end($items); ?>
+      <a href="<?= e(pagination_url(['cursor_val' => $last[$sort], 'cursor_id' => $last['id_vers']])) ?>" class="btn btn-sm btn-outline-primary">الصفحة التالية <i class="bi bi-chevron-left"></i></a>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
