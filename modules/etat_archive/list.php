@@ -15,15 +15,22 @@ if ($filtre !== '') {
     $where[] = 'etat LIKE :etat';
     $params['etat'] = '%' . $filtre . '%';
 }
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$cursorVal = $_GET['cursor_val'] ?? null;
+$cursorId = isset($_GET['cursor_id']) && $_GET['cursor_id'] !== '' ? (int) $_GET['cursor_id'] : null;
 
-$sql = "SELECT id_etat, etat, notes FROM etat_archive {$whereSql} ORDER BY {$sort} {$dir}";
-if ($perPage !== 'all') {
-    $sql .= ' LIMIT ' . (int) $perPage;
+$selectFromSql = "SELECT id_etat, etat, notes FROM etat_archive";
+
+if ($perPage === 'all') {
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $stmt = $pdo->prepare("{$selectFromSql} {$whereSql} ORDER BY {$sort} {$dir}, id_etat {$dir}");
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+    $hasMore = false;
+} else {
+    $result = keyset_paginate($pdo, $selectFromSql, $where, $params, "{$sort}", $dir, 'id_etat', $cursorVal, $cursorId, (int) $perPage);
+    $items = $result['items'];
+    $hasMore = $result['has_more'];
 }
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$items = $stmt->fetchAll();
 
 $pageTitle = 'حالة الأرشيف';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -91,4 +98,19 @@ require __DIR__ . '/../../includes/layout_header.php';
     </table>
   </div>
 </div>
+<?php if ($perPage !== 'all'): ?>
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <div>
+    <?php if ($cursorVal !== null): ?>
+      <a href="<?= e(pagination_url(['cursor_val' => null, 'cursor_id' => null])) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-skip-start"></i> الصفحة الأولى</a>
+    <?php endif; ?>
+  </div>
+  <div>
+    <?php if ($hasMore && $items): ?>
+      <?php $last = end($items); ?>
+      <a href="<?= e(pagination_url(['cursor_val' => $last[$sort], 'cursor_id' => $last['id_etat']])) ?>" class="btn btn-sm btn-outline-primary">الصفحة التالية <i class="bi bi-chevron-left"></i></a>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
