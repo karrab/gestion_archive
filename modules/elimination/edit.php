@@ -113,8 +113,8 @@ require __DIR__ . '/../../includes/layout_header.php';
           <textarea name="membres_commission" class="form-control" rows="2"><?= e($item['membres_commission']) ?></textarea>
         </div>
       </div>
-      <p class="text-muted small">لتعديل قائمة الملفات المتلفة، يرجى حذف العملية وإعادة إنشائها.</p>
       <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
+      <a href="lignes.php?id=<?= $id ?>" class="btn btn-outline-primary"><i class="bi bi-list"></i> الوثائق</a>
       <a href="view.php?id=<?= $id ?>" class="btn btn-secondary">إلغاء</a>
     </form>
   </div>
