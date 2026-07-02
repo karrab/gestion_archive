@@ -42,11 +42,14 @@ $cursorId = isset($_GET['cursor_id']) && $_GET['cursor_id'] !== '' ? (int) $_GET
 
 $selectFromSql = "SELECT a.id, a.date_archive, a.titre_dossier, a.num_boite, a.num_etagere, a.num_plaque, a.emplacement,
                a.annee_min, a.annee_max, a.ref_classification, a.titre_classfication, a.etat_archive, a.fichier,
-               s.nom AS service_nom, e.nom AS employe_nom, e.renom AS employe_renom, d.numero AS depot_numero
+               s.nom AS service_nom, e.nom AS employe_nom, e.renom AS employe_renom, d.numero AS depot_numero,
+               so.nom AS service_origin_nom, eo.nom AS employe_origin_nom, eo.renom AS employe_origin_renom
         FROM archive a
         INNER JOIN service s ON s.id = a.service_id
         INNER JOIN employe e ON e.id = a.employe_id
-        INNER JOIN depot d ON d.id_dept = a.num_depot";
+        INNER JOIN depot d ON d.id_dept = a.num_depot
+        LEFT JOIN service so ON so.id = a.service_origin
+        LEFT JOIN employe eo ON eo.id = a.employe_origin";
 
 if ($perPage === 'all') {
     $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -165,6 +168,8 @@ require __DIR__ . '/../../includes/layout_header.php';
           <th>الموقع</th>
           <th>السنوات</th>
           <th>التصنيف</th>
+          <th>خدمة المصدر</th>
+          <th>موظف المصدر</th>
           <th>الخدمة</th>
           <th>الموظف</th>
           <th>الحالة</th>
@@ -175,7 +180,7 @@ require __DIR__ . '/../../includes/layout_header.php';
           <td></td><td></td>
           <td><input type="text" class="form-control form-control-sm" data-col="titre_dossier" value="<?= e($_GET['f_titre_dossier'] ?? '') ?>"></td>
           <td><input type="text" class="form-control form-control-sm" data-col="num_boite" value="<?= e($_GET['f_num_boite'] ?? '') ?>"></td>
-          <td colspan="10"></td>
+          <td colspan="12"></td>
         </tr>
       </thead>
       <tbody>
@@ -191,6 +196,8 @@ require __DIR__ . '/../../includes/layout_header.php';
           <td><?= e($it['emplacement']) ?></td>
           <td><?= e($it['annee_min']) ?> - <?= e($it['annee_max']) ?></td>
           <td><?= e($it['ref_classification']) ?> - <?= e($it['titre_classfication']) ?></td>
+          <td><?= e($it['service_origin_nom']) ?></td>
+          <td><?= e($it['employe_origin_nom']) ?> <?= e($it['employe_origin_renom']) ?></td>
           <td><?= e($it['service_nom']) ?></td>
           <td><?= e($it['employe_nom']) ?> <?= e($it['employe_renom']) ?></td>
           <td><span class="badge bg-secondary"><?= e($it['etat_archive']) ?></span></td>
@@ -218,7 +225,7 @@ require __DIR__ . '/../../includes/layout_header.php';
         </tr>
       <?php endforeach; ?>
       <?php if (!$items): ?>
-        <tr><td colspan="14" class="text-center text-muted">لا توجد بيانات</td></tr>
+        <tr><td colspan="16" class="text-center text-muted">لا توجد بيانات</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

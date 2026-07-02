@@ -6,11 +6,14 @@ require_permission('archive.view');
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = db()->prepare(
     'SELECT a.*, s.nom AS service_nom, e.nom AS employe_nom, e.renom AS employe_renom, d.numero AS depot_numero,
+            so.nom AS service_origin_nom, eo.nom AS employe_origin_nom, eo.renom AS employe_origin_renom,
             ci.description AS ideo_desc, ct.description AS tmp_desc, cg.description AS geo_desc,
             td.description AS type_desc, sf.description AS sort_desc
      FROM archive a
      INNER JOIN service s ON s.id = a.service_id
      INNER JOIN employe e ON e.id = a.employe_id
+     LEFT JOIN service so ON so.id = a.service_origin
+     LEFT JOIN employe eo ON eo.id = a.employe_origin
      INNER JOIN depot d ON d.id_dept = a.num_depot
      LEFT JOIN carac_ideologique ci ON ci.id_ideo = a.carac_ideologique_id
      LEFT JOIN carac_temporelle ct ON ct.id_tmp = a.carac_temporelle_id
@@ -37,6 +40,8 @@ require __DIR__ . '/../../includes/layout_header.php';
       <dt class="col-sm-3">التاريخ</dt><dd class="col-sm-9"><?= e($item['date_archive']) ?></dd>
       <dt class="col-sm-3">الخدمة</dt><dd class="col-sm-9"><?= e($item['service_nom']) ?></dd>
       <dt class="col-sm-3">الموظف</dt><dd class="col-sm-9"><?= e($item['employe_nom']) ?> <?= e($item['employe_renom']) ?></dd>
+      <dt class="col-sm-3">خدمة المصدر</dt><dd class="col-sm-9"><?= e($item['service_origin_nom'] ?? '') ?></dd>
+      <dt class="col-sm-3">موظف المصدر</dt><dd class="col-sm-9"><?= e($item['employe_origin_nom'] ?? '') ?> <?= e($item['employe_origin_renom'] ?? '') ?></dd>
       <dt class="col-sm-3">عنوان الملف</dt><dd class="col-sm-9"><?= e($item['titre_dossier']) ?></dd>
       <dt class="col-sm-3">رقم الصندوق</dt><dd class="col-sm-9"><?= e($item['num_boite']) ?></dd>
       <dt class="col-sm-3">المستودع</dt><dd class="col-sm-9"><?= e($item['depot_numero']) ?></dd>

@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'date_archive' => trim($_POST['date_archive'] ?? ''),
         'service_id' => (int) ($_POST['service_id'] ?? 0),
         'employe_id' => (int) ($_POST['employe_id'] ?? 0),
+        'service_origin' => (int) ($_POST['service_origin'] ?? 0) ?: null,
+        'employe_origin' => (int) ($_POST['employe_origin'] ?? 0) ?: null,
         'titre_dossier' => trim($_POST['titre_dossier'] ?? ''),
         'num_boite' => trim($_POST['num_boite'] ?? ''),
         'num_depot' => (int) ($_POST['num_depot'] ?? 0),
@@ -56,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         $stmt = db()->prepare(
             'UPDATE archive SET date_archive=:date_archive, service_id=:service_id, employe_id=:employe_id,
-                titre_dossier=:titre_dossier, num_boite=:num_boite, num_depot=:num_depot, num_etagere=:num_etagere,
+                service_origin=:service_origin, employe_origin=:employe_origin, titre_dossier=:titre_dossier, num_boite=:num_boite, num_depot=:num_depot, num_etagere=:num_etagere,
                 num_plaque=:num_plaque, emplacement=:emplacement, annee_min=:annee_min, annee_max=:annee_max,
                 ref_classification=:ref_classification, titre_classfication=:titre_classfication,
                 carac_ideologique_id=:carac_ideologique_id, carac_temporelle_id=:carac_temporelle_id,
@@ -77,6 +79,12 @@ $services = $pdo->query('SELECT id, nom FROM service ORDER BY nom')->fetchAll();
 $employes = $pdo->prepare('SELECT id, nom, renom FROM employe WHERE service_id = ? ORDER BY nom');
 $employes->execute([$item['service_id']]);
 $employes = $employes->fetchAll();
+$employesOrigin = [];
+if (!empty($item['service_origin'])) {
+    $stmtEO = $pdo->prepare('SELECT id, nom, renom FROM employe WHERE service_id = ? ORDER BY nom');
+    $stmtEO->execute([$item['service_origin']]);
+    $employesOrigin = $stmtEO->fetchAll();
+}
 $depots = $pdo->query('SELECT id_dept, numero FROM depot ORDER BY numero')->fetchAll();
 $ideologiques = $pdo->query('SELECT id_ideo, description FROM carac_ideologique ORDER BY description')->fetchAll();
 $temporelles = $pdo->query('SELECT id_tmp, description FROM carac_temporelle ORDER BY description')->fetchAll();
@@ -118,7 +126,27 @@ require __DIR__ . '/../../includes/layout_header.php';
             <?php endforeach; ?>
           </select>
         </div>
+      </div>
+      <div class="row">
         <div class="col-md-3 mb-3">
+          <label class="form-label">خدمة المصدر</label>
+          <select name="service_origin" id="service_origin" class="form-select select2">
+            <option value="">-- اختر --</option>
+            <?php foreach ($services as $s): ?>
+              <option value="<?= $s['id'] ?>" <?= $item['service_origin'] == $s['id'] ? 'selected' : '' ?>><?= e($s['nom']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">موظف المصدر</label>
+          <select name="employe_origin" id="employe_origin" class="form-select select2">
+            <option value="">-- اختر --</option>
+            <?php foreach ($employesOrigin as $emp): ?>
+              <option value="<?= $emp['id'] ?>" <?= $item['employe_origin'] == $emp['id'] ? 'selected' : '' ?>><?= e($emp['nom']) ?> <?= e($emp['renom']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
           <label class="form-label">عنوان الملف</label>
           <input type="text" name="titre_dossier" class="form-control" required value="<?= e($item['titre_dossier']) ?>">
         </div>
@@ -261,6 +289,22 @@ document.getElementById('service_id').addEventListener('change', function () {
         opt.value = it.id;
         opt.textContent = it.text;
         employeSelect.appendChild(opt);
+      });
+    });
+});
+
+document.getElementById('service_origin').addEventListener('change', function () {
+  const sel = document.getElementById('employe_origin');
+  sel.innerHTML = '<option value="">جاري التحميل...</option>';
+  fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + this.value)
+    .then(r => r.json())
+    .then(data => {
+      sel.innerHTML = '<option value="">-- اختر --</option>';
+      data.forEach(it => {
+        const opt = document.createElement('option');
+        opt.value = it.id;
+        opt.textContent = it.text;
+        sel.appendChild(opt);
       });
     });
 });
