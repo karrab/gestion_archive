@@ -72,6 +72,7 @@ $temporelles = $pdo->query('SELECT id_tmp, description FROM carac_temporelle ORD
 $geographiques = $pdo->query('SELECT id_geo, description FROM carac_geographique ORDER BY description')->fetchAll();
 $typesDoc = $pdo->query('SELECT id_typ, description FROM type_doc ORDER BY description')->fetchAll();
 $sorts = $pdo->query('SELECT id_sort, description FROM sort_fin_doc ORDER BY description')->fetchAll();
+$classifications = $pdo->query('SELECT ref_classification, titre_classfication FROM classification ORDER BY ref_classification')->fetchAll();
 
 $pageTitle = 'إضافة أرشيف';
 require __DIR__ . '/../../includes/layout_header.php';
@@ -164,8 +165,12 @@ require __DIR__ . '/../../includes/layout_header.php';
         </div>
         <div class="col-md-2 mb-3">
           <label class="form-label">مرجع التصنيف</label>
-          <input type="text" name="ref_classification" id="ref_classification" class="form-control" required value="<?= e($_POST['ref_classification'] ?? '') ?>" list="classification_list">
-          <datalist id="classification_list"></datalist>
+          <select name="ref_classification" id="ref_classification" class="form-select select2" required>
+            <option value="">-- اختر --</option>
+            <?php foreach ($classifications as $cls): ?>
+              <option value="<?= e($cls['ref_classification']) ?>" data-titre="<?= e($cls['titre_classfication']) ?>" <?= ($_POST['ref_classification'] ?? '') === $cls['ref_classification'] ? 'selected' : '' ?>><?= e($cls['ref_classification']) ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
         <div class="col-md-2 mb-3">
           <label class="form-label">عنوان التصنيف</label>
@@ -278,13 +283,8 @@ jQuery('#service_origin').on('change', function () {
   loadEmployes(this.value, 'employe_origin');
 });
 
-document.getElementById('ref_classification').addEventListener('change', function () {
-  const ref = this.value.trim();
-  if (!ref) return;
-  fetch(window.BASE_URL + '/modules/classification/lookup_ajax.php?ref=' + encodeURIComponent(ref))
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('titre_classfication').value = data.titre || '';
-    });
+jQuery('#ref_classification').on('change', function () {
+  const opt = this.options[this.selectedIndex];
+  document.getElementById('titre_classfication').value = opt ? (opt.getAttribute('data-titre') || '') : '';
 });
 </script>
