@@ -197,6 +197,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     <a href="view.php?id=<?= $id ?>" class="btn btn-secondary">رجوع</a>
   </div>
 </div>
+<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
 document.getElementById('btn-archive-search').addEventListener('click', function () {
   const q = document.getElementById('archive-search').value.trim();
@@ -235,4 +236,3 @@ document.getElementById('btn-archive-search').addEventListener('click', function
     });
 });
 </script>
-<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

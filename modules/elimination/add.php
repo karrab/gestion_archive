@@ -187,6 +187,7 @@ require __DIR__ . '/../../includes/layout_header.php';
   </div>
 </div>
 
+<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
 const depots = <?= json_encode($depots, JSON_UNESCAPED_UNICODE) ?>;
 let lignes = [];
@@ -271,4 +272,3 @@ document.getElementById('elm-form').addEventListener('submit', function () {
   document.getElementById('lignes_json').value = JSON.stringify(lignes);
 });
 </script>
-<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

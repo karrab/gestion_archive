@@ -276,6 +276,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </form>
   </div>
 </div>
+<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
 document.getElementById('service_id').addEventListener('change', function () {
   const employeSelect = document.getElementById('employe_id');
@@ -319,4 +320,3 @@ document.getElementById('ref_classification').addEventListener('change', functio
     });
 });
 </script>
-<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

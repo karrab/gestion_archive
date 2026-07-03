@@ -112,6 +112,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </form>
   </div>
 </div>
+<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
 document.getElementById('service').addEventListener('change', function () {
   const employeSelect = document.getElementById('employe');
@@ -129,4 +130,3 @@ document.getElementById('service').addEventListener('change', function () {
     });
 });
 </script>
-<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>

@@ -118,6 +118,7 @@ require __DIR__ . '/../../includes/layout_header.php';
     </form>
   </div>
 </div>
+<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
 function bindCascade(serviceSelectId, employeSelectId) {
   document.getElementById(serviceSelectId).addEventListener('change', function () {
@@ -139,4 +140,3 @@ function bindCascade(serviceSelectId, employeSelectId) {
 bindCascade('service_origin', 'employe_origin');
 bindCascade('service_dest', 'employe_dest');
 </script>
-<?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
