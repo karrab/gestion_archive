@@ -37,9 +37,9 @@ function csrf_verify(): void
     }
 }
 
-function e(?string $value): string
+function e(int|float|string|null $value): string
 {
-    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 function redirect(string $url): void
