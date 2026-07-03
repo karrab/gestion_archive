@@ -121,19 +121,32 @@ require __DIR__ . '/../../includes/layout_header.php';
 </div>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
-document.getElementById('service').addEventListener('change', function () {
-  const employeSelect = document.getElementById('employe');
-  employeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+jQuery('#service').on('change', function () {
+  const $sel = jQuery('#employe');
+  if (!this.value) {
+    $sel.html('<option value="">-- اختر الخدمة أولاً --</option>').trigger('change.select2');
+    return;
+  }
+  $sel.html('<option value="">جاري التحميل...</option>').trigger('change.select2');
   fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + this.value)
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(data => {
-      employeSelect.innerHTML = '<option value="">-- اختر --</option>';
-      data.forEach(it => {
-        const opt = document.createElement('option');
-        opt.value = it.id;
-        opt.textContent = it.text;
-        employeSelect.appendChild(opt);
-      });
+      let html = '<option value="">-- اختر --</option>';
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach(it => {
+          html += '<option value="' + it.id + '">' + it.text + '</option>';
+        });
+      } else {
+        html += '<option value="" disabled>لا توجد موظفون</option>';
+      }
+      $sel.html(html).trigger('change.select2');
+    })
+    .catch(err => {
+      console.error('Error loading employees:', err);
+      $sel.html('<option value="" disabled>خطأ في التحميل</option>').trigger('change.select2');
     });
 });
 </script>

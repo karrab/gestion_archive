@@ -278,63 +278,42 @@ require __DIR__ . '/../../includes/layout_header.php';
 </div>
 <?php require __DIR__ . '/../../includes/layout_footer.php'; ?>
 <script>
-document.getElementById('service_id').addEventListener('change', function () {
-  if (!this.value) return;
-  const employeSelect = document.getElementById('employe_id');
-  employeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
-  fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + this.value)
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(data => {
-      employeSelect.innerHTML = '<option value="">-- اختر --</option>';
-      if (Array.isArray(data) && data.length > 0) {
-        data.forEach(it => {
-          const opt = document.createElement('option');
-          opt.value = it.id;
-          opt.textContent = it.text;
-          employeSelect.appendChild(opt);
-        });
-      } else {
-        employeSelect.innerHTML += '<option value="" disabled>لا توجد موظفون</option>';
-      }
-    })
-    .catch(err => {
-      console.error('Error loading employees:', err);
-      employeSelect.innerHTML = '<option value="" disabled>خطأ في التحميل</option>';
-    });
-});
-
-document.getElementById('service_origin').addEventListener('change', function () {
-  if (!this.value) {
-    document.getElementById('employe_origin').innerHTML = '<option value="">-- اختر الخدمة أولاً --</option>';
+// Charge les employés d'une source dans un <select> et notifie Select2 du changement.
+function loadEmployes(serviceId, targetId) {
+  const $sel = jQuery('#' + targetId);
+  if (!serviceId) {
+    $sel.html('<option value="">-- اختر الخدمة أولاً --</option>').trigger('change.select2');
     return;
   }
-  const sel = document.getElementById('employe_origin');
-  sel.innerHTML = '<option value="">جاري التحميل...</option>';
-  fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + this.value)
+  $sel.html('<option value="">جاري التحميل...</option>').trigger('change.select2');
+  fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + serviceId)
     .then(r => {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     })
     .then(data => {
-      sel.innerHTML = '<option value="">-- اختر --</option>';
+      let html = '<option value="">-- اختر --</option>';
       if (Array.isArray(data) && data.length > 0) {
         data.forEach(it => {
-          const opt = document.createElement('option');
-          opt.value = it.id;
-          opt.textContent = it.text;
-          sel.appendChild(opt);
+          html += '<option value="' + it.id + '">' + it.text + '</option>';
         });
       } else {
-        sel.innerHTML += '<option value="" disabled>لا توجد موظفون</option>';
+        html += '<option value="" disabled>لا توجد موظفون</option>';
       }
+      $sel.html(html).trigger('change.select2');
     })
     .catch(err => {
       console.error('Error loading employees:', err);
-      sel.innerHTML = '<option value="" disabled>خطأ في التحميل</option>';
+      $sel.html('<option value="" disabled>خطأ في التحميل</option>').trigger('change.select2');
     });
+}
+
+jQuery('#service_id').on('change', function () {
+  loadEmployes(this.value, 'employe_id');
+});
+
+jQuery('#service_origin').on('change', function () {
+  loadEmployes(this.value, 'employe_origin');
 });
 
 document.getElementById('ref_classification').addEventListener('change', function () {

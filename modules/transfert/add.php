@@ -172,19 +172,32 @@ const depots = <?= json_encode($depots, JSON_UNESCAPED_UNICODE) ?>;
 let lignes = [];
 
 function cascadeService(serviceSelId, employeSelId) {
-  document.getElementById(serviceSelId).addEventListener('change', function () {
-    const employeSelect = document.getElementById(employeSelId);
-    employeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+  jQuery('#' + serviceSelId).on('change', function () {
+    const $sel = jQuery('#' + employeSelId);
+    if (!this.value) {
+      $sel.html('<option value="">-- اختر الخدمة أولاً --</option>').trigger('change.select2');
+      return;
+    }
+    $sel.html('<option value="">جاري التحميل...</option>').trigger('change.select2');
     fetch(window.BASE_URL + '/modules/employe/by_service_ajax.php?service_id=' + this.value)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
       .then(data => {
-        employeSelect.innerHTML = '<option value="">-- اختر --</option>';
-        data.forEach(it => {
-          const opt = document.createElement('option');
-          opt.value = it.id;
-          opt.textContent = it.text;
-          employeSelect.appendChild(opt);
-        });
+        let html = '<option value="">-- اختر --</option>';
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(it => {
+            html += '<option value="' + it.id + '">' + it.text + '</option>';
+          });
+        } else {
+          html += '<option value="" disabled>لا توجد موظفون</option>';
+        }
+        $sel.html(html).trigger('change.select2');
+      })
+      .catch(err => {
+        console.error('Error loading employees:', err);
+        $sel.html('<option value="" disabled>خطأ في التحميل</option>').trigger('change.select2');
       });
   });
 }
