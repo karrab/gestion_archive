@@ -180,7 +180,7 @@ require __DIR__ . '/../../includes/layout_header.php';
           <td></td><td></td>
           <td><input type="text" class="form-control form-control-sm" data-col="titre_dossier" value="<?= e($_GET['f_titre_dossier'] ?? '') ?>"></td>
           <td><input type="text" class="form-control form-control-sm" data-col="num_boite" value="<?= e($_GET['f_num_boite'] ?? '') ?>"></td>
-          <td colspan="12"></td>
+          <td colspan="13"></td>
         </tr>
       </thead>
       <tbody>
